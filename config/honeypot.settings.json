@@ -1,0 +1,24 @@
+{
+    "_config_name": "honeypot.settings",
+    "protect_all_forms": 0,
+    "expire": 300,
+    "time_limit": 5,
+    "element_name": "url",
+    "log": 0,
+    "form_settings": {
+            "user_register_form": 0,
+            "user_pass": 0,
+            "webforms": 0,
+            "feedback_contact_message_form": 0,
+            "contact_site_form": 0,
+            "contact_personal_form": 0,
+            "user_profile_form": 0
+    },
+    "unprotected_forms": [
+            "user_login_form",
+            "search_form",
+            "search_block_form",
+            "views_exposed_form",
+            "honeypot_settings_form"
+    ]
+}

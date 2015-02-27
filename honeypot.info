@@ -1,6 +1,6 @@
 name = Honeypot
 description = "Mitigates spam form submissions using the honeypot method."
-core = 7.x
+backdrop = 1.x
 configure = admin/config/content/honeypot
 package = "Spam control"
 

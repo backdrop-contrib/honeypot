@@ -2,8 +2,19 @@
 
 /**
  * @file
- * Honeypot module, for deterring spam bots from completing Drupal forms.
+ * Honeypot module, for deterring spam bots from completing Backdrop forms.
  */
+
+/**
+* Implements hook_config_info().
+*/
+function honeypot_config_info() {
+  $prefixes['honeypot.settings'] = array(
+    'label' => t('Settings'),
+    'group' => t('Honeypot'),
+  );
+  return $prefixes;
+}
 
 /**
  * Implements hook_menu().
@@ -12,7 +23,7 @@ function honeypot_menu() {
   $items['admin/config/content/honeypot'] = array(
     'title' => 'Honeypot configuration',
     'description' => 'Configure Honeypot spam prevention and the forms on which Honeypot will be used.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('honeypot_admin_form'),
     'access arguments' => array('administer honeypot'),
     'file' => 'honeypot.admin.inc',
@@ -43,7 +54,7 @@ function honeypot_permission() {
 function honeypot_cron() {
   // Delete {honeypot_user} entries older than the value of honeypot_expire.
   db_delete('honeypot_user')
-    ->condition('timestamp', time() - variable_get('honeypot_expire', 300), '<')
+    ->condition('timestamp', time() - $config->get('expire'), '<')
     ->execute();
 }
 
@@ -58,17 +69,14 @@ function honeypot_form_alter(&$form, &$form_state, $form_id) {
     return;
   }
 
-  $unprotected_forms = array(
-    'user_login',
-    'user_login_block',
-    'search_form',
-    'search_block_form',
-    'views_exposed_form',
-    'honeypot_admin_form',
-  );
+  $config = config('honeypot.settings');
+
+  // Get list of unprotected forms and setting for whether to protect all forms.
+  $unprotected_forms = $config->get('unprotected_forms');
+  $protect_all_forms = $config->get('protect_all_forms');
 
   // If configured to protect all forms, add protection to every form.
-  if (variable_get('honeypot_protect_all_forms', 0) && !in_array($form_id, $unprotected_forms)) {
+  if ($protect_all_forms && !in_array($form_id, $unprotected_forms)) {
     // Don't protect system forms - only admins should have access, and system
     // forms may be programmatically submitted by drush and other modules.
     if (strpos($form_id, 'system_') === FALSE && strpos($form_id, 'search_') === FALSE && strpos($form_id, 'views_exposed_form_') === FALSE) {
@@ -134,7 +142,7 @@ function honeypot_rules_event_info() {
  * @todo - Add in API call/hook to allow modules to add to this array.
  */
 function honeypot_get_protected_forms() {
-  $forms = &drupal_static(__FUNCTION__);
+  $forms = &backdrop_static(__FUNCTION__);
 
   // If the data isn't already in memory, get from cache or look it up fresh.
   if (!isset($forms)) {
@@ -142,15 +150,18 @@ function honeypot_get_protected_forms() {
       $forms = $cache->data;
     }
     else {
-      // Look up all the honeypot forms in the variables table.
-      $result = db_query("SELECT name FROM {variable} WHERE name LIKE 'honeypot_form_%'")->fetchCol();
-      // Add each form that's enabled to the $forms array.
-      foreach ($result as $variable) {
-        if (variable_get($variable, 0)) {
-          $forms[] = substr($variable, 14);
+      $form_settings = $config->get('form_settings');
+      if (!empty($form_settings)) {
+        // Add each form that's enabled to the $forms array.
+        foreach ($form_settings as $form_id => $enabled) {
+          if ($enabled) {
+            $forms[] = $form_id;
+          }
         }
       }
-
+      else {
+        $forms = [];
+      }
       // Save the cached data.
       cache_set('honeypot_protected_forms', $forms, 'cache');
     }
@@ -172,8 +183,9 @@ function honeypot_get_protected_forms() {
 function honeypot_add_form_protection(&$form, &$form_state, $options = array()) {
   global $user;
 
+  $config = config('honeypot.settings');
   // Allow other modules to alter the protections applied to this form.
-  drupal_alter('honeypot_form_protections', $options, $form);
+  backdrop_alter('honeypot_form_protections', $options, $form);
 
   // Don't add any protections if the user can bypass the Honeypot.
   if (user_access('bypass honeypot protection')) {
@@ -183,11 +195,11 @@ function honeypot_add_form_protection(&$form, &$form_state, $options = array()) 
   // Build the honeypot element.
   if (in_array('honeypot', $options)) {
     // Get the element name (default is generic 'url').
-    $honeypot_element = variable_get('honeypot_element_name', 'url');
+    $honeypot_element = $config->get('element_name');
 
     // Add 'autocomplete="off"' if configured.
     $attributes = array();
-    if (variable_get('honeypot_autocomplete_attribute', 1)) {
+    if ($config->get('autocomplete_attribute')) {
       $attributes = array('autocomplete' => 'off');
     }
 
@@ -205,14 +217,14 @@ function honeypot_add_form_protection(&$form, &$form_state, $options = array()) 
       // Hide honeypot using CSS.
       '#attached' => array(
         'css' => array(
-          'data' => variable_get('file_public_path', conf_path() . '/files') . '/honeypot/honeypot.css',
+          'data' => config_get('system.core', 'file_public_path') . '/honeypot/honeypot.css',
         ),
       ),
     );
   }
 
   // Build the time restriction element (if it's not disabled).
-  if (in_array('time_restriction', $options) && variable_get('honeypot_time_limit', 5) != 0) {
+  if (in_array('time_restriction', $options) && $config->get('time_limit') != 0) {
     // Set the current time in a hidden value to be checked later.
     $form['honeypot_time'] = array(
       '#type' => 'hidden',
@@ -285,7 +297,7 @@ function _honeypot_time_restriction_validate($element, &$form_state) {
  */
 function _honeypot_log($form_id, $type) {
   honeypot_log_failure($form_id, $type);
-  if (variable_get('honeypot_log', 0)) {
+  if (config_get('honeypot.settings','log')) {
     $variables = array(
       '%form'  => $form_id,
       '@cause' => ($type == 'honeypot') ? t('submission of a value in the honeypot field') : t('submission of the form in less than minimum required time'),
@@ -302,7 +314,9 @@ function _honeypot_log($form_id, $type) {
  */
 function honeypot_get_time_limit($form_values = array()) {
   global $user;
-  $honeypot_time_limit = variable_get('honeypot_time_limit', 5);
+
+  $config = config('honeypot.settings');
+  $honeypot_time_limit = $config->get('time_limit');
 
   // Only calculate time limit if honeypot_time_limit has a value > 0.
   if ($honeypot_time_limit) {
@@ -315,7 +329,7 @@ function honeypot_get_time_limit($form_values = array()) {
       $number = db_query("SELECT COUNT(*) FROM {flood} WHERE event = :event AND identifier = :hostname AND timestamp > :time", array(
         ':event' => 'honeypot',
         ':hostname' => ip_address(),
-        ':time' => time() - variable_get('honeypot_expire', 300),
+        ':time' => time() - $config->get('expire'),
       ))->fetchField();
     }
     // Don't add more than 30 days' worth of extra time.
@@ -386,7 +400,7 @@ function honeypot_create_css($element_name) {
   $path = 'public://honeypot';
 
   if (!file_prepare_directory($path, FILE_CREATE_DIRECTORY)) {
-    drupal_set_message(t('Unable to create Honeypot CSS directory, %path. Check the permissions on your files directory.', array('%path' => file_uri_target($path))), 'error');
+    backdrop_set_message(t('Unable to create Honeypot CSS directory, %path. Check the permissions on your files directory.', array('%path' => file_uri_target($path))), 'error');
   }
   else {
     $filename = $path . '/honeypot.css';
