@@ -8,7 +8,7 @@ The module currently supports enabling for all forms on the site, or particular 
 Installation
 ------------
 
-To install this module, place it in your sites/all/modules folder and enable it on the modules page.
+To install this module, place it in your modules folder and enable it on the modules page.
 
 
 Configuration
