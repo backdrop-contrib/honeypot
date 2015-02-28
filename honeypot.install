@@ -70,25 +70,38 @@ function honeypot_update_last_removed() {
 /**
  * Move honeypot settings from variables to config.
  */
-/*
+
 function honeypot_update_1000() {
   // Migrate variables to config.
   $config = config('honeypot.settings');
-  $config->set('', update_variable_get('', 0));
+  $config->set('protect_all_forms', update_variable_get('honeypot_protect_all_forms', 0));
+  $config->set('expire', update_variable_get('honeypot_expire', 300));
+  $config->set('log', update_variable_get('honeypot_log', 1));
+  $config->set('element_name', update_variable_get('honeypot_element_name', 'url'));
+  $config->set('time_limit', update_variable_get('honeypot_time_limit', 5));
+
+  $form_settings = array();
+  $result = db_query('SELECT * FROM {variable} WHERE name LIKE  :name', array(':name' => '%honeypot_form_%'));
+  foreach ($result as $row) {
+    $form_settings[$row->name] = unserialize($row->value);
+  }
+  $config->set('form_settings', $form_settings);
 
   $config->save();
 
   // Delete variables.
-  update_variable_del('');
+  update_variable_del('honeypot_protect_all_forms');
+  update_variable_del('honeypot_expire');
+  update_variable_del('honeypot_log');
+  update_variable_del('honeypot_element_name');
+  update_variable_del('honeypot_time_limit');
 
+  foreach($form_settings as $k => $v) {
+    update_variable_del($k);
+  }
 }
-*/
 
 /**
  * @} End of "defgroup updates-7.x-to-1.x"
  * The next series of updates should start at 2000.
  */
-
-
-//element_name', 'url'
-//comment_form', 0

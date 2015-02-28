@@ -73,13 +73,13 @@ function honeypot_admin_form($form, &$form_state) {
   $form['enabled_forms']['honeypot_form_user_register_form'] = array(
     '#type' => 'checkbox',
     '#title' => t('User Registration form'),
-    '#default_value' => $form_settings['user_register_form'],
+    '#default_value' => $form_settings['honeypot_form_user_register_form'],
   );
   // User password form.
   $form['enabled_forms']['honeypot_form_user_pass'] = array(
     '#type' => 'checkbox',
     '#title' => t('User Password Reset form'),
-    '#default_value' => $form_settings['user_pass'],
+    '#default_value' => $form_settings['honeypot_form_user_pass'],
   );
 
   // If webform.module enabled, add webforms.
@@ -87,7 +87,7 @@ function honeypot_admin_form($form, &$form_state) {
     $form['enabled_forms']['honeypot_form_webforms'] = array(
       '#type' => 'checkbox',
       '#title' => t('Webforms (all)'),
-      '#default_value' => $form_settings['webforms'],
+      '#default_value' => $form_settings['honeypot_form_webforms'],
     );
   }
 
@@ -98,13 +98,13 @@ function honeypot_admin_form($form, &$form_state) {
     $form['enabled_forms']['honeypot_form_contact_site_form'] = array(
       '#type' => 'checkbox',
       '#title' => t('Sitewide Contact form'),
-      '#default_value' => $form_settings['contact_site_form'],
+      '#default_value' => $form_settings['honeypot_form_contact_site_form'],
     );
     // Sitewide personal form.
     $form['enabled_forms']['honeypot_form_contact_personal_form'] = array(
       '#type' => 'checkbox',
       '#title' => t('Personal Contact forms'),
-      '#default_value' => $form_settings['contact_personal_form'],
+      '#default_value' => $form_settings['honeypot_form_contact_personal_form'],
     );
   }
 
@@ -124,11 +124,11 @@ function honeypot_admin_form($form, &$form_state) {
     // Node forms.
     $form['enabled_forms']['node_forms'] = array('#markup' => '<h5>' . t('Node Forms') . '</h5>');
     foreach ($types as $type) {
-      $id = $type->type . '_node_form';
-      $form['enabled_forms']['honeypot_form_' . $id] = array(
+      $id = 'honeypot_form_' . $type->type . '_node_form';
+      $form['enabled_forms'][$id] = array(
         '#type' => 'checkbox',
         '#title' => t('@name node form', array('@name' => $type->name)),
-        '#default_value' => $config->get($id),
+        '#default_value' => $form_settings[$id],
       );
     }
 
@@ -136,11 +136,11 @@ function honeypot_admin_form($form, &$form_state) {
     if (module_exists('comment')) {
       $form['enabled_forms']['comment_forms'] = array('#markup' => '<h5>' . t('Comment Forms') . '</h5>');
       foreach ($types as $type) {
-        $id = 'comment_node_' . $type->type . '_form';
-        $form['enabled_forms']['honeypot_form_' . $id] = array(
+        $id = 'honeypot_form_comment_node_' . $type->type . '_form';
+        $form['enabled_forms'][$id] = array(
           '#type' => 'checkbox',
           '#title' => t('@name comment form', array('@name' => $type->name)),
-          '#default_value' => $config->get($id),
+          '#default_value' => $form_settings[$id],
         );
       }
     }
@@ -189,19 +189,23 @@ function honeypot_admin_form_submit($form, &$form_state) {
 
   $config = config('honeypot.settings');
 
-debug($form_state['value']);
+  // Store individual form settings in an array
+  $form_settings = array();
+
+  foreach($form_state['values'] as $k => $v) {
+    if("honeypot_form_" == substr($k,0,14)) {
+      $form_settings[$k] = $v;
+    }
+  }
 
   // Save all the Honeypot configuration items from $form_state.
-//  foreach ($form_state['values'] as $key => $value) {
-//    if (in_array($key, $storage['keys'])) {
-//      $config->set($key, $value);
-//    }
-//  }
+  $config->set('protect_all_forms', $form_state['values']['honeypot_protect_all_forms']);
+  $config->set('log', $form_state['values']['honeypot_log']);
+  $config->set('element_name', $form_state['values']['honeypot_element_name']);
+  $config->set('time_limit', $form_state['values']['honeypot_time_limit']);
+  $config->set('form_settings', $form_settings);
 
-  // Save the honeypot forms from $form_state into a 'form_settings' array.
-  //$config->set('form_settings', $form_state['values']['form_settings']);
-
-  //$config->save();
+  $config->save();
 
   // Clear the Honeypot form cache on submit.
   cache_clear_all('honeypot_protected_forms', 'cache');

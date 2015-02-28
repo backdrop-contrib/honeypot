@@ -144,9 +144,11 @@ function honeypot_rules_event_info() {
 function honeypot_get_protected_forms() {
   $forms = &backdrop_static(__FUNCTION__);
 
+  $config = config('honeypot.settings');
+
   // If the data isn't already in memory, get from cache or look it up fresh.
   if (!isset($forms)) {
-    if ($cache = cache_get('honeypot_protected_forms')) {
+    if ($cache = cache_get('honeypot_protected_forms', 'cache')) {
       $forms = $cache->data;
     }
     else {
@@ -160,7 +162,7 @@ function honeypot_get_protected_forms() {
         }
       }
       else {
-        $forms = [];
+        $forms = array();
       }
       // Save the cached data.
       cache_set('honeypot_protected_forms', $forms, 'cache');
