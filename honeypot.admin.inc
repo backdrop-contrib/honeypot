@@ -128,7 +128,7 @@ function honeypot_admin_form($form, &$form_state) {
       $form['enabled_forms'][$id] = array(
         '#type' => 'checkbox',
         '#title' => t('@name node form', array('@name' => $type->name)),
-        '#default_value' => $form_settings[$id],
+        '#default_value' => array_key_exists($id, $form_settings) ? $form_settings[$id]: 0,
       );
     }
 
@@ -140,7 +140,7 @@ function honeypot_admin_form($form, &$form_state) {
         $form['enabled_forms'][$id] = array(
           '#type' => 'checkbox',
           '#title' => t('@name comment form', array('@name' => $type->name)),
-          '#default_value' => $form_settings[$id],
+          '#default_value' => array_key_exists($id, $form_settings) ? $form_settings[$id]: 0,
         );
       }
     }
@@ -190,8 +190,9 @@ function honeypot_admin_form_submit($form, &$form_state) {
   $config = config('honeypot.settings');
 
   // Store individual form settings in an array
-  $form_settings = array();
+  $form_settings = $config->get('form_settings');
 
+  // Update the form settings
   foreach($form_state['values'] as $k => $v) {
     if("honeypot_form_" == substr($k,0,14)) {
       $form_settings[$k] = $v;
