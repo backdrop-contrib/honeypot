@@ -79,6 +79,14 @@ function honeypot_update_1000() {
   $config->set('log', update_variable_get('honeypot_log', 1));
   $config->set('element_name', update_variable_get('honeypot_element_name', 'url'));
   $config->set('time_limit', update_variable_get('honeypot_time_limit', 5));
+  $config->set('unprotected_forms', array(
+    'user_login',
+    'user_login_block',
+    'search_form',
+    'search_block_form',
+    'views_exposed_form',
+    'honeypot_admin_form'
+  ));
 
   $form_settings = array();
   $result = db_query('SELECT * FROM {variable} WHERE name LIKE  :name', array(':name' => '%honeypot_form_%'));
