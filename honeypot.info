@@ -5,4 +5,3 @@ type = module
 configure = admin/config/content/honeypot
 package = "Spam control"
 
-files[] = honeypot.test
