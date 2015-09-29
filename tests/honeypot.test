@@ -34,6 +34,7 @@ class HoneypotFormTestCase extends BackdropWebTestCase {
     // Test protecting all forms.
     $config->set('protect_all_forms', TRUE);
     $config->set('log', FALSE);
+    $config->save();
 
     // Set up other required variables.
     config_set('system.core', 'user_email_verification', TRUE);
@@ -55,12 +56,12 @@ class HoneypotFormTestCase extends BackdropWebTestCase {
     $this->webUser = $this->backdropCreateUser(array(
       'access comments',
       'post comments',
-      'create article content',
+      'create post content',
     ));
 
     // Set up example node.
     $this->node = $this->backdropCreateNode(array(
-      'type' => 'article',
+      'type' => 'post',
       'promote' => 1,
       'uid' => $this->webUser->uid,
     ));
@@ -80,6 +81,7 @@ class HoneypotFormTestCase extends BackdropWebTestCase {
   }
 
   public function testProtectUserRegisterHoneypotFilled() {
+
     // Set up form and submit it.
     $edit['name'] = $this->randomName();
     $edit['mail'] = $edit['name'] . '@example.com';
@@ -155,21 +157,21 @@ class HoneypotFormTestCase extends BackdropWebTestCase {
 
     // Set up the form and submit it.
     $edit["title"] = 'Test Page';
-    $this->backdropPost('node/add/article', $edit, t('Save'));
+    $this->backdropPost('node/add/post', $edit, t('Save'));
     $this->assertText(t('There was a problem with your form submission.'), 'Honeypot node form timestamp protection works.');
   }
 
   /**
    * Test node form protection.
    */
-  public function testProtectNodeFormPreviewPassthru() {
-    // Log in the admin user.
+  public function testProtectNodeFormPassthru() {
+    // Log in the web user.
     $this->backdropLogin($this->webUser);
 
-    // Post a node form using the 'Preview' button and make sure it's allowed.
+    // Post a node form using the 'Save' button and make sure it's allowed.
     $edit["title"] = 'Test Page';
-    $this->backdropPost('node/add/article', $edit, t('Preview'));
-    $this->assertNoText(t('There was a problem with your form submission.'), 'Honeypot not blocking node form previews.');
+    $this->backdropPost('node/add/post', $edit, t('Save'));
+    $this->assertNoText(t('There was a problem with your form submission.'), 'Honeypot not blocking node form saves.');
   }
 }
 
