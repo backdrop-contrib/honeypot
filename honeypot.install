@@ -112,16 +112,15 @@ function honeypot_update_1000() {
 }
 
 /**
- * @} End of "defgroup updates-7.x-to-1.x"
- * The next series of updates should start at 2000.
- */
-
-/**
  * Ensure a css file is created
  */
-function honeypot_update_2001() {
+function honeypot_update_1001() {
   backdrop_load('module', 'honeypot');
   module_load_include('inc', 'honeypot', 'honeypot.admin');
   honeypot_create_css(config_get('honeypot.settings', 'element_name'));
 }
 
+/**
+ * @} End of "defgroup updates-7.x-to-1.x"
+ * The next series of updates should start at 2000.
+ */
