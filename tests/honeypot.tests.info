@@ -4,6 +4,12 @@ description = Tests the functionality of Honeypot module for an admin user, test
 group = Honeypot
 file = honeypot.test
 
+[HoneypotAdminFormTestCase]
+name = Test the Honeypot form for admin user
+description = Tests the functionality of the Honeypot module for an admin user.
+group = Honeypot
+file = honeypot.test
+
 [HoneypotCssTestCase]
 name = Test Honeypot's CSS generation routines.
 description = Test Honeypot's CSS regeneration both directly and via cron.
