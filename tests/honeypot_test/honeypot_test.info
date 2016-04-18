@@ -1,0 +1,6 @@
+name = Honeypot test
+description = Support module for Honeypot internal testing purposes.
+backdrop = 1.x
+type = module
+package = Testing
+hidden = TRUE

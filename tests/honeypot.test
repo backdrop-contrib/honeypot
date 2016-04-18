@@ -23,7 +23,7 @@ class HoneypotFormTestCase extends BackdropWebTestCase {
 
   public function setUp() {
     // Enable modules required for this test.
-    parent::setUp(array('honeypot', 'comment'));
+    parent::setUp(array('honeypot', 'comment', 'honeypot_test'));
 
     $config = config('honeypot.settings');
 
@@ -180,13 +180,11 @@ class HoneypotFormTestCase extends BackdropWebTestCase {
   public function testProgrammaticSubmission() {
     // Enable time limit protection.
     config_set('honeypot.settings', 'time_limit', 5);
-
-    // Create a user for which we are going to trigger the password reset.
-    $edit = array();
-    $edit['name']   = 'robo-user';
-    $edit['mail']   = $edit['name'] . '@example.com';
-    $edit['status'] = 1;
-    user_save(backdrop_anonymous_user(), $edit);
+    // Setup user for which we are going to trigger the password reset.
+    $this->webUser->name   = 'robo-user';
+    $this->webUser->mail   = $this->webUser->name . '@example.com';
+    $this->webUser->status = 1;
+    user_save($this->webUser);
 
     // Trigger the password reset through a programmatic submission.
     $this->backdropGet('honeypot_test/submit_form');
@@ -235,14 +233,14 @@ class HoneypotAdminFormTestCase extends BackdropWebTestCase {
     $this->backdropPost('admin/config/content/honeypot', $edit, t('Save configuration'));
 
     // Form should have been submitted successfully.
-    $this->assertText(t('The configuration options have been saved.'), 'Honeypot element name assertion works for valid names.');
+    $this->assertText(t('The honeypot settings have been saved.'), 'Honeypot element name assertion works for valid names.');
 
     // Set up form and submit it.
     $edit['honeypot_element_name'] = "test-1";
     $this->backdropPost('admin/config/content/honeypot', $edit, t('Save configuration'));
 
     // Form should have been submitted successfully.
-    $this->assertText(t('The configuration options have been saved.'), 'Honeypot element name assertion works for valid names with dashes and numbers.');
+    $this->assertText(t('The honeypot settings have been saved.'), 'Honeypot element name assertion works for valid names with dashes and numbers.');
   }
 
   /**
