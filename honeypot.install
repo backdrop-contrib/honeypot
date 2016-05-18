@@ -130,10 +130,12 @@ function honeypot_update_1001() {
  * Adds the 'hostname' column to the {honeypot_user} table.
  */
 function honeypot_update_1002() {
-  $schema = honeypot_schema();
-  $spec = $schema['honeypot_user']['fields']['hostname'];
-  $spec['initial'] = '';
-  db_add_field('honeypot_user', 'hostname', $spec);
+  if (!db_field_exists('honeypot_user', 'hostname')) {
+    $schema = honeypot_schema();
+    $spec = $schema['honeypot_user']['fields']['hostname'];
+    $spec['initial'] = '';
+    db_add_field('honeypot_user', 'hostname', $spec);
+  }
 }
 
 /**
