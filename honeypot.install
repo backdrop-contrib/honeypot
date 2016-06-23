@@ -173,7 +173,7 @@ function honeypot_update_1004() {
     'views_exposed_form',
     'honeypot_admin_form'
   ));
-  $config-save();
+  $config->save();
 }
 
 /*
