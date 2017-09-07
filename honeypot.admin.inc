@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Honeypot administration forms.
@@ -10,6 +9,10 @@
  */
 function honeypot_admin_form($form, &$form_state) {
   $config = config('honeypot.settings');
+
+  if ($config->get('time_limit') != 0 && empty($form_state['input'])) {
+    backdrop_set_message(t('<strong>Page caching will be disabled on any page with a form if the Honeypot time limit is not 0.</strong>'), 'warning');
+  }
 
   // Honeypot Configuration.
   $form['configuration'] = array(
@@ -24,7 +27,6 @@ function honeypot_admin_form($form, &$form_state) {
     '#description' => t('Enable Honeypot protection for ALL forms on this site (it is best to only enable Honeypot for the forms you need below).'),
     '#default_value' => $config->get('protect_all_forms'),
   );
-  $form['configuration']['honeypot_protect_all_forms']['#description'] .= '<br />' . t('<strong>Page caching will be disabled on any page where a form is present if the Honeypot time limit is not set to 0.</strong>');
   $form['configuration']['honeypot_log'] = array(
     '#type' => 'checkbox',
     '#title' => t('Log blocked form submissions'),
@@ -42,13 +44,12 @@ function honeypot_admin_form($form, &$form_state) {
   $form['configuration']['honeypot_time_limit'] = array(
     '#type' => 'textfield',
     '#title' => t('Honeypot time limit'),
-    '#description' => t('Minimum time required before form should be considered entered by a human instead of a bot. Set to 0 to disable.'),
+    '#description' => t('Minimum time required before form should be considered entered by a human instead of a bot. A reasonable time-limit is 5 seconds. Set to 0 to disable.'),
     '#default_value' => $config->get('time_limit'),
     '#required' => TRUE,
     '#size' => 5,
     '#field_suffix' => t('seconds'),
   );
-  $form['configuration']['honeypot_time_limit']['#description'] .= '<br />' . t('<strong>Page caching will be disabled if there is a form protected by time limit on the page.</strong>');
 
   // Honeypot Enabled forms.
   $form['enabled_forms'] = array(
