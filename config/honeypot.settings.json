@@ -5,6 +5,7 @@
     "log": 0,
     "element_name": "url",
     "time_limit": "0",
+    "use_js_for_cached_pages": 0,
     "unprotected_forms": [
         "user_login",
         "user_login_block",
