@@ -198,7 +198,7 @@ class HoneypotFormTestCase extends BackdropWebTestCase {
     // Any value that is not strictly empty should trigger Honeypot.
     foreach (['0', ' '] as $value) {
       $edit['url'] = $value;
-      $this->drupalPost('user/register', $edit, t('Create new account'));
+      $this->backdropPost('user/register', $edit, t('Create new account'));
       $this->assertText(t('There was a problem with your form submission. Please refresh the page and try again.'), "Honeypot protection is triggered when the honeypot field contains '{$value}'.");
     }
   }
@@ -366,6 +366,7 @@ class HoneypotCssTestCase extends BackdropWebTestCase {
    * Test CSS works when default file scheme is not public://
    */
   public function testHoneypotCssNonpublicFileSystem() {
+    config_set('system.core', 'file_private_path', 'files/private');
     config_set('system.core', 'file_default_scheme', 'private');
 
     $honeypot_css = honeypot_get_css_file_path();
