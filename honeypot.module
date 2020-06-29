@@ -202,6 +202,14 @@ function honeypot_get_protected_forms() {
       else {
         $forms = array();
       }
+
+      // Allow other modules to add protected forms.
+      $protect_forms_info = array();
+      foreach (module_implements('honeypot_protect_forms_info') as $module) {
+        $protect_forms_info += call_user_func($module . '_honeypot_protect_forms_info');
+      }
+      $forms = array_merge($forms, $protect_forms_info);
+
       // Save the cached data.
       cache_set('honeypot_protected_forms', $forms, 'cache');
     }
