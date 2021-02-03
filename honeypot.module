@@ -10,8 +10,8 @@
 */
 function honeypot_config_info() {
   $prefixes['honeypot.settings'] = array(
-    'label' => t('Settings'),
-    'group' => t('Honeypot'),
+    'label' => t('Honeypot'),
+    'group' => t('Configuration'),
   );
   return $prefixes;
 }
