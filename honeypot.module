@@ -382,7 +382,7 @@ function _honeypot_time_restriction_validate(&$element, &$form_state) {
     // Update the honeypot_time value in the form state and element.
     $form_state['values']['honeypot_time'] = honeypot_get_signed_timestamp(REQUEST_TIME);
     $element['#value'] = $form_state['values']['honeypot_time'];
-    form_set_error('', t('There was a problem with your form submission. Please wait @limit seconds and try again.', array('@limit' => $time_limit)));
+    form_set_error('', t('This form was submitted too quickly. We are trying to prevent automated spam submissions. Please wait @limit seconds and try again.', array('@limit' => $time_limit)));
   }
 }
 
