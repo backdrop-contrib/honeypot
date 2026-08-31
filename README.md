@@ -77,8 +77,6 @@ Credits
 
 - Ported to Backdrop by Herb v/d Dool (https://github.com/herbdool/)
 - Originally developed for Drupal by [Jeff Geerling](https://www.drupal.org/u/geerlingguy)
-  of [Midwestern Mac, LLC](midwesternmac.com)
-- sponsored by [flockNote](flocknote.com).
 
 License
 -------
